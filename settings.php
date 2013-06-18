@@ -29,7 +29,15 @@ $settings->add(new admin_setting_heading('sampleheader',
                                          get_string('headerconfig', 'block_broken_links'),
                                          get_string('descconfig', 'block_broken_links')));
 
-$settings->add(new admin_setting_configcheckbox('broken_links/foo',
-                                                get_string('labelfoo', 'block_broken_links'),
-                                                get_string('descfoo', 'block_broken_links'),
-                                                '0'));
+$settings->add(new admin_setting_configcheckbox('broken_links/internal_links',
+                                                get_string('labelinternal_links', 'block_broken_links'),
+                                                get_string('descinternal_links', 'block_broken_links'),
+                                                '1'));
+                                                
+$settings->add(new admin_setting_configtextarea('broken_links/ignored_domains',
+                                            get_string('nameignored_domains', 'block_broken_links'),
+                                            get_string('titleignored_domains', 'block_broken_links'),
+                                            get_string('descignored_domains', 'block_broken_links'),
+                                            PARAM_RAW, 100, 20));
+                                            
+                                                
