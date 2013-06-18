@@ -30,6 +30,9 @@ $string['descconfig'] = 'Description of the whole config section';
 $string['descfoo'] = 'Description of a single configuration item';
 $string['labelfoo'] = 'Name of a single configuration item';
 
+// Instance configuration strings
+$string['blocktitle'] = 'Broken links';
+
 // Permission strings
 $string['broken_links:addinstance'] = 'Add a Broken links block';
 $string['broken_links:myaddinstance'] = 'Add a Broken links block to my moodle';
