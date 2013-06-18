@@ -59,6 +59,7 @@ class block_broken_links extends block_base {
         if (empty($currentcontext)) {
             return $this->content;
         }
+        
         if ($this->page->course->id == SITEID) {
             $this->context->text .= "site context";
         }
