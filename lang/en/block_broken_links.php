@@ -24,11 +24,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['blockstring'] = 'Block string';
-$string['descconfig'] = 'Description of the config section';
-$string['descfoo'] = 'Config description';
-$string['headerconfig'] = 'Config section header';
-$string['labelfoo'] = 'Config label';
+// Site wide settings strings
+$string['headerconfig'] = 'Configuration section header';
+$string['descconfig'] = 'Description of the whole config section';
+$string['descfoo'] = 'Description of a single configuration item';
+$string['labelfoo'] = 'Name of a single configuration item';
+
+// Permission strings
 $string['broken_links:addinstance'] = 'Add a Broken links block';
 $string['broken_links:myaddinstance'] = 'Add a Broken links block to my moodle';
+
+// General strings
 $string['pluginname'] = 'Broken links';
