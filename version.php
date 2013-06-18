@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013011300;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2012112900;        // Requires this Moodle version
+$plugin->version   = 2013061800;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->requires  = 2012120300;        // Requires Moodle 2.4
 $plugin->component = 'block_broken_links'; // Full name of the plugin (used for diagnostics)
 $plugin->cron = 300;
