@@ -26,9 +26,12 @@
 
 // Site wide settings strings
 $string['headerconfig'] = 'Configuration section header';
-$string['descconfig'] = 'Description of the whole config section';
-$string['descfoo'] = 'Description of a single configuration item';
-$string['labelfoo'] = 'Name of a single configuration item';
+$string['descconfig'] = 'The following settings will affect every Broken links block on your Moodle installation. Choose carefully.';
+$string['labelinternal_links'] = 'Internal links';
+$string['descinternal_links'] = 'Ignore internal links';
+$string['nameignored_domains'] = 'Ignore domains';
+$string['titleignored_domains'] = 'The URLs from the domains above will never be checked';
+$string['descignored_domains'] = 'example.com, somemoodle.com, ';
 
 // Instance configuration strings
 $string['blocktitle'] = 'Broken links';
