@@ -74,14 +74,14 @@ class block_broken_links extends block_base {
         $links = $DB->get_records('block_broken_links', array('course' => $COURSE->id, 'ignoreurl' => false));
         foreach ($links as $link) {
         	// First test to see if the course moodule still exists - if it doesn't, delete this broken_links DB record.
-        	if (!$cm = get_coursemodule_from_id($link->module, $link->$cmid, $COURSE->id)) {
+        	if (!$cm = get_coursemodule_from_id($link->module, $link->cmid, $COURSE->id)) {
         		$DB->delete_records('block_broken_links', $link);		// KSW TODO is this the place to be deleting reconrds?
         		continue;
 			}
 			$o = ''; 											// Display module icon
 			$o .= $cm->name;									// Display module name
 			$o .= '';											// Action icons
-			$this->content->text .= html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
+			$this->content->text = html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
 		}
 
         return $this->content;
