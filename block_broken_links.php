@@ -47,15 +47,20 @@ class block_broken_links extends block_base {
         $this->content->items = array();
         $this->content->icons = array();
         $this->content->footer = '';
+        $this->content->text = '';
 
         // user/index.php expect course context, so get one if page has module context.
         $currentcontext = $this->page->context->get_course_context(false);
+
+        // Only display the block to users with permission to view it.
+        if (!has_capability('block/broken_links:view', $currentcontext)) {
+            return $this->content;
+		}
 
         if (! empty($this->config->text)) {
             $this->content->text = $this->config->text;
         }
 
-        $this->content = '';
         if (empty($currentcontext)) {
             return $this->content;
         }
@@ -64,24 +69,23 @@ class block_broken_links extends block_base {
             $this->context->text .= "site context";
         }
 
-        if (! empty($this->config->text)) {
-            $this->content->text .= $this->config->text;
-        }
-
         global $COURSE, $DB;
+        $modinfo = get_fast_modinfo($COURSE);					// Get details of the modules in this course
 
         // Display the database records of broken links for this course
         $links = $DB->get_records('block_broken_links', array('course' => $COURSE->id, 'ignoreurl' => false));
         foreach ($links as $link) {
         	// First test to see if the course moodule still exists - if it doesn't, delete this broken_links DB record.
-        	if (!$cm = get_coursemodule_from_id($link->module, $link->cmid, $COURSE->id)) {
-        		$DB->delete_records('block_broken_links', $link);		// KSW TODO is this the place to be deleting reconrds?
+        	if (!array_key_exists($link->cmid, $modinfo->cms)) {
+        		$DB->delete_records('block_broken_links', $link);	// KSW TODO is this the place to be deleting reconrds?
         		continue;
 			}
-			$o = ''; 											// Display module icon
-			$o .= $cm->name;									// Display module name
+			$mod = $modinfo->cms[$link->cmid];					// Retrieve the module object
+			$o = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
+                'class' => 'iconsmall activityicon', 'alt' => $mod->modfullname));   	// Display module icon
+			$o .= $mod->name;									// Display module name
 			$o .= '';											// Action icons
-			$this->content->text = html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
+			$this->content->text .= html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
 		}
 
         return $this->content;

@@ -39,6 +39,7 @@ $string['blocktitle'] = 'Broken links';
 // Permission strings
 $string['broken_links:addinstance'] = 'Add a Broken links block';
 $string['broken_links:myaddinstance'] = 'Add a Broken links block to my moodle';
+$string['broken_links:view'] = 'View the Broken links block';
 
 // General strings
 $string['pluginname'] = 'Broken links';
