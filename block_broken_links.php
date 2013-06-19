@@ -71,11 +71,11 @@ class block_broken_links extends block_base {
         global $COURSE, $DB;
 
         // Display the database records of broken links for this course
-        $links = $DB->get_records('broken_links', array('course' => $COURSE->id, 'ignoreurl' => false));
+        $links = $DB->get_records('block_broken_links', array('course' => $COURSE->id, 'ignoreurl' => false));
         foreach ($links as $link) {
         	// First test to see if the course moodule still exists - if it doesn't, delete this broken_links DB record.
         	if (!$cm = get_coursemodule_from_id($link->module, $link->$cmid, $COURSE->id)) {
-        		$DB->delete_records('broken_links', $link);		// KSW TODO is this the place to be deleting reconrds?
+        		$DB->delete_records('block_broken_links', $link);		// KSW TODO is this the place to be deleting reconrds?
         		continue;
 			}
 			$o = ''; 											// Display module icon
