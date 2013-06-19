@@ -59,7 +59,7 @@ class block_broken_links extends block_base {
         if (empty($currentcontext)) {
             return $this->content;
         }
-        
+
         if ($this->page->course->id == SITEID) {
             $this->context->text .= "site context";
         }
@@ -67,6 +67,22 @@ class block_broken_links extends block_base {
         if (! empty($this->config->text)) {
             $this->content->text .= $this->config->text;
         }
+
+        global $COURSE, $DB;
+
+        // Display the database records of broken links for this course
+        $links = $DB->get_records('broken_links', array('course' => $COURSE->id, 'ignoreurl' => false));
+        foreach ($links as $link) {
+        	// First test to see if the course moodule still exists - if it doesn't, delete this broken_links DB record.
+        	if (!$cm = get_coursemodule_from_id($link->module, $link->$cmid, $COURSE->id)) {
+        		$DB->delete_records('broken_links', $link);		// KSW TODO is this the place to be deleting reconrds?
+        		continue;
+			}
+			$o = ''; 											// Display module icon
+			$o .= $cm->name;									// Display module name
+			$o .= '';											// Action icons
+			$this->content->text .= html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
+		}
 
         return $this->content;
     }
@@ -76,9 +92,9 @@ class block_broken_links extends block_base {
         return array('all' => false,
                      'site' => true,
                      'site-index' => true,
-                     'course-view' => true, 
+                     'course-view' => true,
                      'course-view-social' => false,
-                     'mod' => true, 
+                     'mod' => true,
                      'mod-quiz' => false);
     }
 
@@ -90,9 +106,9 @@ class block_broken_links extends block_base {
 
     public function cron() {
             mtrace( "Hey, my cron script is running" );
-             
+
                  // do something
-                  
+
                       return true;
     }
 }
