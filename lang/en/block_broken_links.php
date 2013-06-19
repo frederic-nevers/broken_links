@@ -24,14 +24,43 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// Site wide settings strings
+// Site wide settings
 $string['headerconfig'] = 'Configuration section header';
-$string['descconfig'] = 'The following settings will affect every Broken links block on your Moodle installation. Choose carefully.';
+$string['descconfig'] = 'The following settings will affect every \'Broken links\' block on your Moodle installation. Choose carefully.';
+
+//Ignore internal link site wide setting
 $string['labelinternal_links'] = 'Internal links';
-$string['descinternal_links'] = 'Ignore internal links';
+$string['descinternal_links'] = 'Should internal links be ignored and never be checked?';
+
+//Ignored domains site wide setting
 $string['nameignored_domains'] = 'Ignore domains';
-$string['titleignored_domains'] = 'The URLs from the domains above will never be checked';
+$string['titleignored_domains'] = 'The URLs from the domains above will never be checked. Separate each domain with a comma, as shown in the example.';
 $string['descignored_domains'] = 'example.com, somemoodle.com, ';
+
+//Modules to check site wide setting
+$string['namemodules'] = 'Activities and resources to check';
+$string['titlemodules'] = 'Select the parts of Moodle you wish to check for broken links.';
+$string['assignment'] = 'Assignment descriptions';
+$string['forum'] = 'Forum posts';
+$string['label'] = 'Labels';
+$string['page'] = 'Pages';
+$string['url'] = 'URL';
+$string['wiki'] = 'Wikis';
+
+//Days when cron should be run
+$string['namecrondays'] = 'Check for broken links on';
+$string['titlecrondays'] = 'Select the days when broken links should be checked.';
+$string['sunday'] = 'Sunday';
+$string['monday'] = 'Monday';
+$string['tuesday'] = 'Tuesday';
+$string['wednesday'] = 'Wednesday';
+$string['thursday'] = 'Thursday';
+$string['friday'] = 'Friday';
+$string['saturday'] = 'Saturday';
+
+//Time at which cron should be run
+$string['titlecrontime'] = 'Check for broken links at';
+$string['desccrontime'] = 'Checking for broken links may take a long time and use up CPU. Choose a time when your site does not receive a lot of traffic.';
 
 // Instance configuration strings
 $string['blocktitle'] = 'Broken links';
