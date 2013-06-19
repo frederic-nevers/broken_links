@@ -29,15 +29,62 @@ $settings->add(new admin_setting_heading('sampleheader',
                                          get_string('headerconfig', 'block_broken_links'),
                                          get_string('descconfig', 'block_broken_links')));
 
+//Single checkbox. Determines whether internal links should be checked
 $settings->add(new admin_setting_configcheckbox('broken_links/internal_links',
                                                 get_string('labelinternal_links', 'block_broken_links'),
                                                 get_string('descinternal_links', 'block_broken_links'),
                                                 '1'));
-                                                
+
+//Textbox with no formatting. Determines which domains should not be checked for broken URL's. Does not strip HTML tags. Output is saved as is in config_plugins                                               
 $settings->add(new admin_setting_configtextarea('broken_links/ignored_domains',
                                             get_string('nameignored_domains', 'block_broken_links'),
                                             get_string('titleignored_domains', 'block_broken_links'),
                                             get_string('descignored_domains', 'block_broken_links'),
-                                            PARAM_RAW, 100, 20));
-                                            
-                                                
+                                            PARAM_RAW, 50, 10));
+
+//Group of checkboxes. Determines the parts of Moodle for which broken URL's are checked. The output is saved in config_plugins in CSV format                                             
+$settings->add(new admin_setting_configmulticheckbox('broken_links/modules',
+													get_string('namemodules','block_broken_links'),
+													get_string('titlemodules','block_broken_links'),
+													array(
+													'assignment'	=> 1,
+													'forum' 		=> 1,
+													'label'			=> 1,
+													'page'			=> 1,
+													'url'			=> 1,
+													'wiki'			=> 0),
+													array(
+													'assignment'	=> get_string('assignment', 'block_broken_links'),
+													'forum'			=> get_string('forum', 'block_broken_links'),
+													'label'			=> get_string('label', 'block_broken_links'),
+													'page'			=> get_string('page', 'block_broken_links'),
+													'url'			=> get_string('url', 'block_broken_links'),
+													'wiki'			=> get_string('wiki', 'block_broken_links'),																)));
+
+//Group of checkboxes. Determines the days when cron should be run. The output is saved in 0111101 format in config_plugins
+$settings->add(new admin_setting_configmulticheckbox2('broken_links/crondays',
+													get_string('namecrondays','block_broken_links'),
+													get_string('titlecrondays','block_broken_links'),
+													array(
+													'sunday'	=> 1,
+													'monday' 	=> 1,
+													'tuesday'	=> 1,
+													'wednesday'	=> 1,
+													'thursday'	=> 1,
+													'friday'	=> 1,
+													'saturday'	=> 1),
+													array(
+													'sunday'	=> get_string('sunday', 'block_broken_links'),
+													'monday'	=> get_string('monday', 'block_broken_links'),
+													'tuesday'	=> get_string('tuesday', 'block_broken_links'),
+													'wednesday'	=> get_string('wednesday', 'block_broken_links'),
+													'thursday'	=> get_string('thursday', 'block_broken_links'),
+													'friday'	=> get_string('friday', 'block_broken_links'),
+													'saturday'	=> get_string('saturday', 'block_broken_links'),
+													)));
+
+//Time picker. Determines the time when cron should be run. The output is saved in 2 values in config_plugins; hourcrontime & minutecrontime                                            
+$settings->add(new admin_setting_configtime('broken_links/hourcrontime', 'minutecrontime',
+											get_string('titlecrontime','block_broken_links'),
+											get_string('desccrontime','block_broken_links'),
+											array('h' => 2, 'm' => 30)));
