@@ -40,23 +40,10 @@ $string['descignored_domains'] = 'example.com, somemoodle.com, ';
 //Modules to check site wide setting
 $string['namemodules'] = 'Activities and resources to check';
 $string['titlemodules'] = 'Select the parts of Moodle you wish to check for broken links.';
-$string['assignment'] = 'Assignment descriptions';
-$string['forum'] = 'Forum posts';
-$string['label'] = 'Labels';
-$string['page'] = 'Pages';
-$string['url'] = 'URL';
-$string['wiki'] = 'Wikis';
 
 //Days when cron should be run
 $string['namecrondays'] = 'Check for broken links on';
 $string['titlecrondays'] = 'Select the days when broken links should be checked.';
-$string['sunday'] = 'Sunday';
-$string['monday'] = 'Monday';
-$string['tuesday'] = 'Tuesday';
-$string['wednesday'] = 'Wednesday';
-$string['thursday'] = 'Thursday';
-$string['friday'] = 'Friday';
-$string['saturday'] = 'Saturday';
 
 //Time at which cron should be run
 $string['titlecrontime'] = 'Check for broken links at';
