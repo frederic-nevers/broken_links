@@ -54,12 +54,14 @@ $settings->add(new admin_setting_configmulticheckbox('broken_links/modules',
 													'url'			=> 1,
 													'wiki'			=> 0),
 													array(
-													'assignment'	=> get_string('assignment', 'block_broken_links'),
-													'forum'			=> get_string('forum', 'block_broken_links'),
-													'label'			=> get_string('label', 'block_broken_links'),
-													'page'			=> get_string('page', 'block_broken_links'),
-													'url'			=> get_string('url', 'block_broken_links'),
-													'wiki'			=> get_string('wiki', 'block_broken_links'),																)));
+													'assignment'	=> get_string('textinstructions', 'mod_assign'),
+													'book'			=> get_string('modulenameplural', 'mod_book'),
+													'forum'			=> get_string('forumposts', 'mod_forum'),
+													'glossary'		=> get_string('modulenameplural', 'mod_glossary'),
+													'label'			=> get_string('labeltext', 'mod_label'),
+													'page'			=> get_string('modulenameplural', 'mod_page'),
+													'url'			=> get_string('modulenameplural', 'mod_url'),
+													'wiki'			=> get_string('modulenameplural', 'mod_wiki'),																			)));
 
 //Group of checkboxes. Determines the days when cron should be run. The output is saved in 0111101 format in config_plugins
 $settings->add(new admin_setting_configmulticheckbox2('broken_links/crondays',
@@ -74,13 +76,13 @@ $settings->add(new admin_setting_configmulticheckbox2('broken_links/crondays',
 													'friday'	=> 1,
 													'saturday'	=> 1),
 													array(
-													'sunday'	=> get_string('sunday', 'block_broken_links'),
-													'monday'	=> get_string('monday', 'block_broken_links'),
-													'tuesday'	=> get_string('tuesday', 'block_broken_links'),
-													'wednesday'	=> get_string('wednesday', 'block_broken_links'),
-													'thursday'	=> get_string('thursday', 'block_broken_links'),
-													'friday'	=> get_string('friday', 'block_broken_links'),
-													'saturday'	=> get_string('saturday', 'block_broken_links'),
+													'sunday'	=> get_string('sunday', 'core_calendar'),
+													'monday'	=> get_string('monday', 'core_calendar'),
+													'tuesday'	=> get_string('tuesday', 'core_calendar'),
+													'wednesday'	=> get_string('wednesday', 'core_calendar'),
+													'thursday'	=> get_string('thursday', 'core_calendar'),
+													'friday'	=> get_string('friday', 'core_calendar'),
+													'saturday'	=> get_string('saturday', 'core_calendar'),
 													)));
 
 //Time picker. Determines the time when cron should be run. The output is saved in 2 values in config_plugins; hourcrontime & minutecrontime                                            
