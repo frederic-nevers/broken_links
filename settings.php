@@ -35,26 +35,30 @@ $settings->add(new admin_setting_configcheckbox('broken_links/internal_links',
                                                 get_string('descinternal_links', 'block_broken_links'),
                                                 '1'));
 
-//Textbox with no formatting. Determines which domains should not be checked for broken URL's. Does not strip HTML tags. Output is saved as is in config_plugins                                               
+//Textbox with no formatting. Determines which domains should not be checked for broken URL's. Does not strip HTML tags. Output is saved as is in config_plugins
 $settings->add(new admin_setting_configtextarea('broken_links/ignored_domains',
                                             get_string('nameignored_domains', 'block_broken_links'),
                                             get_string('titleignored_domains', 'block_broken_links'),
                                             get_string('descignored_domains', 'block_broken_links'),
                                             PARAM_RAW, 50, 10));
 
-//Group of checkboxes. Determines the parts of Moodle for which broken URL's are checked. The output is saved in config_plugins in CSV format                                             
+//Group of checkboxes. Determines the parts of Moodle for which broken URL's are checked. The output is saved in config_plugins in CSV format
 $settings->add(new admin_setting_configmulticheckbox('broken_links/modules',
 													get_string('namemodules','block_broken_links'),
 													get_string('titlemodules','block_broken_links'),
 													array(
-													'assignment'	=> 1,
+													'assign'		=> 1,
+													'assignment'	=> 0,
+													'book'			=> 1,
 													'forum' 		=> 1,
+													'glossary'		=> 1,
 													'label'			=> 1,
 													'page'			=> 1,
 													'url'			=> 1,
 													'wiki'			=> 0),
 													array(
-													'assignment'	=> get_string('textinstructions', 'mod_assign'),
+													'assign'		=> get_string('textinstructions', 'mod_assign') . ' (' . get_string('modulename', 'mod_assign') . ')',
+													'assignment'	=> get_string('description', 'mod_assignment') . ' (' . get_string('modulename', 'mod_assignment') . ')',
 													'book'			=> get_string('modulenameplural', 'mod_book'),
 													'forum'			=> get_string('forumposts', 'mod_forum'),
 													'glossary'		=> get_string('modulenameplural', 'mod_glossary'),
@@ -85,7 +89,7 @@ $settings->add(new admin_setting_configmulticheckbox2('broken_links/crondays',
 													'saturday'	=> get_string('saturday', 'core_calendar'),
 													)));
 
-//Time picker. Determines the time when cron should be run. The output is saved in 2 values in config_plugins; hourcrontime & minutecrontime                                            
+//Time picker. Determines the time when cron should be run. The output is saved in 2 values in config_plugins; hourcrontime & minutecrontime
 $settings->add(new admin_setting_configtime('broken_links/hourcrontime', 'minutecrontime',
 											get_string('titlecrontime','block_broken_links'),
 											get_string('desccrontime','block_broken_links'),

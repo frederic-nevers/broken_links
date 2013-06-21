@@ -88,6 +88,7 @@ class block_broken_links extends block_base {
 			$this->content->text .= html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
 		}
 
+
         return $this->content;
     }
 
@@ -109,10 +110,123 @@ class block_broken_links extends block_base {
     function has_config() {return true;}
 
     public function cron() {
-            mtrace( "Hey, my cron script is running" );
+        mtrace( "Starting cron script for block broken_links" );
 
-                 // do something
+        // TODO - add "only start at 2.30am" code. Also need to break out of the loop below after a certain time?
 
-                      return true;
+        if (!$fields = $DB->get_records('block_broken_links_fields', array('active' => 1), 'lastcron ASC')) {
+        	mtrace( "No active entries in block_broken_links_fields, so exiting." );
+        	return true;
+		}
+
+		// Work out where we left off last time this cron ran.
+		$lastfield = 0;
+		$lastfieldid = 0;
+		foreach ($fields as $key => $field) {
+			if ($field->lastcron > 0) {
+				$lastfield = $key;
+				$lastfieldid = $field->lastcron;
+			}
+		}
+		// Rotate array of DB fields so the foreach will start at the right place
+		if ($lastfield) {
+			$fields = array_merge(array_slice($fields, $lastfield), array_slice($fields, 0, $lastfield));
+		}
+
+        // This is the main loop for checking links.
+        // We check each DB field in turn, looping through each record within that field in a sub-loop.
+        // We start out from where we left off last time.
+        foreach ($fields as $key => $field) {
+			$sql = "SELECT id, $field->field FROM $field->table WHERE id > $field->lastcronid";
+			$records = $DB->get_records_sql_menu($sql, array('lastcronid' => $field->lastcronid));
+
+			foreach ($records as $record) {					// Loop through each record for this DB field
+				$urls = $this->getlinks($record);			// Returns an array of URLs contained within the field
+				foreach ($urls as $url) {					// Loop through these URLs
+					$broken = $this->checklink($url);		// Returns a 404-type code if the URL is broken
+					if ($broken) {
+						$entry->module = $field->modname;
+						$entry->urltocheck = $url;
+						list($entry->course, $entry->cmid) = $this->getmoduleinfo($field, $record);
+
+						if (!$DB->record_exists('block_broken_links', $entry)) {
+							$entry->timestamp = time();
+							$entry->response = $broken;
+							$entry->ignoreurl = 0;
+							$DB->insert_record('block_broken_links', $entry);
+						}
+					}
+				}
+			}
+		}
+
+        return true;
     }
+
+	/**
+	 * Returns an array of URLs contained within the string
+	 *
+	 * @param string $field - the contents of a database field
+	 * @return array - an array of URLs as strings
+	 */
+    private function getlinks($field) {
+
+    	// This is where our REGEXP goes
+		$urls = array();
+
+		return $urls;
+	}
+
+	/**
+	 * Returns a 404-type code if the URL is broken, otherwise returns false
+	 *
+	 * @param string $url - the URL to be checked
+	 * @return mixed
+	 */
+    private function checklink($url) {
+
+    	$code = false;
+
+    	return $code;
+	}
+
+	/**
+	 * Returns the course id and the course module id associated with a particular record in a given table
+	 *
+	 * @param object $field - a record from table block_broken_links_fields that lets us know what table we're dealing with
+	 * @param int $id - the id number of the record we're interested in
+	 * @return array
+	 */
+    private function getmoduleinfo($field, $id) {
+
+    	// Get the module id number to simplify the sql statements below
+    	$modid = $DB->get_field('modules', 'id', array ('name' => $field->modname), MUST_EXIST);
+
+    	// First handle the easy cases - where this field is the standard intro field of the main module table
+    	if ($field->table == $field->modname && $field->field == 'intro') {
+    		$course = $DB->get_field($field->table, 'course', array ('id' => $id), MUST_EXIST);
+    		$cmid = $DB->get_field('course_modules', 'id', array ('instance' => $id, 'module' => $modid), MUST_EXIST);
+    		return array($course, $cmid);
+		}
+
+    	// Now the non-standard cases
+    	switch ($field->table) {
+
+		    case "forum_posts":
+    			$sql = "SELECT cm.id AS cmid, d.course FROM course_modules cm
+    					  JOIN forum_discussions d ON d.forum = cm.instance
+    				      JOIN forum_posts p ON p.discussion = d.id
+    				     WHERE p.id = :id ";
+		        break;
+
+		    // TODO need more of these
+		}
+
+		$cminfo = $DB->get_record_sql($sql, array ('id' => $id, 'module' => $modid), MUST_EXIST);
+        $course = $cminfo->course;
+        $cmid = $cminfo->cmid;
+
+    	return array($course, $cmid);
+	}
+
 }
