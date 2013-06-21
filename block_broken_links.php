@@ -113,6 +113,7 @@ class block_broken_links extends block_base {
         mtrace( "Starting cron script for block broken_links" );
 
         // TODO - add "only start at 2.30am" code. Also need to break out of the loop below after a certain time? 2 hours?
+		$cronendtime = time() + 2 * 3600;	// TODO Make this an admin setting???
 
        	// Get the DB tables and fields that we're going to search. These will be in order of the oldest previous cron first.
         if (!$fields = $DB->get_records('block_broken_links_fields', array('active' => 1), 'lastcron ASC')) {
@@ -147,12 +148,20 @@ class block_broken_links extends block_base {
 						}
 					}
 				}
+				// Check if our 2 hours is up. If it is, break out of these loops and set the lastcronid to equal the record id we've reached
+				if (time() > $cronendtime) {
+					$field->lastcronid = $id;
+					$DB->update_record('block_broken_links_fields', $field);
+					break 2;	// Exit both $records and $fields loops
+				}
 			}
 			// We've finished checking every record in this field, so we set lastcronid = 0 if it isn't already
 			if ($field->lastcronid) {
 				$field->lastcronid = 0;
-				$DB->update_record('block_broken_links_fields', $field);
 			}
+			// Also update the lastcron timestamp for this field to move it to the bottom of the waiting list.
+			$field->lastcron = time();
+			$DB->update_record('block_broken_links_fields', $field);
 		}
 
         return true;
