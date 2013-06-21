@@ -112,8 +112,9 @@ class block_broken_links extends block_base {
     public function cron() {
         mtrace( "Starting cron script for block broken_links" );
 
-        // TODO - add "only start at 2.30am" code. Also need to break out of the loop below after a certain time?
+        // TODO - add "only start at 2.30am" code. Also need to break out of the loop below after a certain time? 2 hours?
 
+       	// Get the DB tables and fields that we're going to search. These will be in order of the oldest previous cron first.
         if (!$fields = $DB->get_records('block_broken_links_fields', array('active' => 1), 'lastcron ASC')) {
         	mtrace( "No active entries in block_broken_links_fields, so exiting." );
         	return true;
@@ -123,26 +124,34 @@ class block_broken_links extends block_base {
         // We check each DB field in turn, looping through each record within that field in a sub-loop.
         // We start out from where we left off last time.
         foreach ($fields as $key => $field) {
+
+			// Return all the records for this DB field as an associative array, where the key is the id field of the DB table
+			// The lastcronid will only apply to the very first field we look at in this loop, as others will have lastcronid=0
 			$sql = "SELECT id, $field->field FROM $field->table WHERE id > $field->lastcronid";
 			$records = $DB->get_records_sql_menu($sql, array('lastcronid' => $field->lastcronid));
 
-			foreach ($records as $record) {					// Loop through each record for this DB field
-				$urls = $this->getlinks($record);			// Returns an array of URLs contained within the field
-				foreach ($urls as $url) {					// Loop through these URLs
+			foreach ($records as $id => $record) {			// Loop through each $record (string, not object) for this DB field
+				$urls = $this->getlinks($record);			// Returns an array of URLs contained within the field (string)
+				foreach ($urls as $url) {					// Loop through these URLs that have been found
 					$broken = $this->checklink($url);		// Returns a 404-type code if the URL is broken
 					if ($broken) {
-						$entry->module = $field->modname;
-						$entry->urltocheck = $url;
-						list($entry->course, $entry->cmid) = $this->getmoduleinfo($field, $record);
+						$entry->module = $field->modname;	// e.g. 'forum' or 'assign'
+						$entry->urltocheck = $url;			// The broken URL itself
+						list($entry->course, $entry->cmid) = $this->getmoduleinfo($field, $id);	// mdl_course.id and mdl_course_modules.id
 
 						if (!$DB->record_exists('block_broken_links', $entry)) {
 							$entry->timestamp = time();
-							$entry->response = $broken;
+							$entry->response = $broken;		// 404-type code
 							$entry->ignoreurl = 0;
 							$DB->insert_record('block_broken_links', $entry);
 						}
 					}
 				}
+			}
+			// We've finished checking every record in this field, so we set lastcronid = 0 if it isn't already
+			if ($field->lastcronid) {
+				$field->lastcronid = 0;
+				$DB->update_record('block_broken_links_fields', $field);
 			}
 		}
 
@@ -152,12 +161,13 @@ class block_broken_links extends block_base {
 	/**
 	 * Returns an array of URLs contained within the string
 	 *
-	 * @param string $field - the contents of a database field
+	 * @param string $string - the contents of a database field
 	 * @return array - an array of URLs as strings
 	 */
-    private function getlinks($field) {
+    private function getlinks($string) {
 
-    	// This is where our REGEXP goes
+    	// This is where our REGEXP goes - the way I imagine it, we take the $string and look for URLs
+    	// Given that there may be more than one, we have to return our findings as an array - each element is simply a string URL
 		$urls = array();
 
 		return $urls;
@@ -173,6 +183,9 @@ class block_broken_links extends block_base {
 
     	$code = false;
 
+    	// This is where our CURL stuff goes - we take the $url and if it works, we return false.
+    	// If it's broken, we return and integer 404 or 500 or whatever
+
     	return $code;
 	}
 
@@ -180,7 +193,7 @@ class block_broken_links extends block_base {
 	 * Returns the course id and the course module id associated with a particular record in a given table
 	 *
 	 * @param object $field - a record from table block_broken_links_fields that lets us know what table we're dealing with
-	 * @param int $id - the id number of the record we're interested in
+	 * @param int $id - the id number of the record we're interested in from DB field '$field'
 	 * @return array
 	 */
     private function getmoduleinfo($field, $id) {
