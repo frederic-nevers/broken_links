@@ -119,20 +119,6 @@ class block_broken_links extends block_base {
         	return true;
 		}
 
-		// Work out where we left off last time this cron ran.
-		$lastfield = 0;
-		$lastfieldid = 0;
-		foreach ($fields as $key => $field) {
-			if ($field->lastcron > 0) {
-				$lastfield = $key;
-				$lastfieldid = $field->lastcron;
-			}
-		}
-		// Rotate array of DB fields so the foreach will start at the right place
-		if ($lastfield) {
-			$fields = array_merge(array_slice($fields, $lastfield), array_slice($fields, 0, $lastfield));
-		}
-
         // This is the main loop for checking links.
         // We check each DB field in turn, looping through each record within that field in a sub-loop.
         // We start out from where we left off last time.
