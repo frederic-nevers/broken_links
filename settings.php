@@ -89,8 +89,18 @@ $settings->add(new admin_setting_configmulticheckbox2('broken_links/crondays',
 													'saturday'	=> get_string('saturday', 'core_calendar'),
 													)));
 
-//Time picker. Determines the time when cron should be run. The output is saved in 2 values in config_plugins; hourcrontime & minutecrontime
+//Time picker. Determines the time when cron should start running. The output is saved in 2 values in config_plugins; hourcrontime & minutecrontime
 $settings->add(new admin_setting_configtime('broken_links/hourcrontime', 'minutecrontime',
 											get_string('titlecrontime','block_broken_links'),
 											get_string('desccrontime','block_broken_links'),
 											array('h' => 2, 'm' => 30)));
+											
+//Drop down box. Number of hours the cron should run for. 22 hours maximum to avoid problems in countries with daylight saving time
+$options = range(0, 23);
+$settings->add(new admin_setting_configselect('broken_links/cronduration',
+                                                get_string('eventduration','core_calendar'),
+                                                get_string('desccronduration', 'block_broken_links'),
+                                                1,
+                                                $options));                                              
+                                                
+                                                
