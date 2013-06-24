@@ -49,6 +49,9 @@ $string['titlecrondays'] = 'Select the days when broken links should be checked.
 $string['titlecrontime'] = 'Check for broken links at';
 $string['desccrontime'] = 'Checking for broken links may take a long time and use up CPU. Choose a time when your site does not receive a lot of traffic.';
 
+//Cron duration (in hours)
+$string['desccronduration'] = 'Duration in hours. The system will stop checking for broken links after the number of hours selected.';
+
 // Instance configuration strings
 $string['blocktitle'] = 'Broken links';
 
