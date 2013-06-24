@@ -110,11 +110,54 @@ class block_broken_links extends block_base {
     function has_config() {return true;}
 
     public function cron() {
+    	global $CFG;
         mtrace( "Starting cron script for block broken_links" );
 
-        // TODO - add "only start at 2.30am" code. Also need to break out of the loop below after a certain time? 2 hours?
-		$cronendtime = time() + 2 * 3600;	// TODO Make this an admin setting???
-
+		// Date and time related variables
+		$time = time();
+		if ($CFG->timezone == 99) {                            // Moodle and server timezone values are the same
+            $time = time();                                    // Then time can be returned using time()
+            } else {
+                $offset = get_timezone_offset($CFG->timezone); // If not, what is the timezone Moodle is set at
+                $time = $time + $offset;                       // Compute correct time with GMT offset
+			    }
+		$timezone = $CFG->timezone;                            // Timezone for Moodle installation	
+        $daynumber = date('N', $time); 				           // Numeric representation of weekday. Sunday = 0 and Sunday = 6		
+		$crondays = get_config('broken_links', 'crondays');	   // User-defined values; Days when script should be run
+		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time)); 		   // Returns the most recent midnight for Moodle installation -- TODO - no idea why this returns noon instead of midnight. Need to check on different server
+		mtrace( $time );
+		mtrace( $timezone );
+		mtrace( $daynumber );
+		mtrace( $crondays );
+		mtrace( $midnight );
+		
+	    // Check if script should be run today
+        if (($crondays[$daynumber]) == 0) {                    // Look for user-defined value for today
+            mtrace( "Should not run today" );     
+                 return true;						
+                 }
+	    
+		// Script start time. Returns a timestamp
+		$cronstarthour = get_config('broken_links', 'hourcrontime');			// User configuration for hours	
+		$cronstartmin = get_config('broken_links', 'minutecrontime');			// User configuration for minutes
+		$cronstarttime = $midnight + $cronstarthour * 3600 + $cronstartmin * 60;// Cron start time timestamp
+		mtrace( $cronstarthour );
+		mtrace( $cronstartmin );
+		mtrace( $cronstarttime );
+		
+		// Script end time. Returns a timestamp
+		$cronduration = get_config('broken_links', 'cronduration'); 			// User configuration for cron duration
+		$cronendtime = $cronstarttime + $cronduration * 3600;
+		mtrace( $cronduration );
+		mtrace( $cronendtime );
+		
+        
+        // Check if time is within start and end of user-defined values
+        if ($time < $cronstarttime || $time > $cronendtime) {
+	        mtrace( "Outside of time window" );
+	        return true;
+               }
+        
        	// Get the DB tables and fields that we're going to search. These will be in order of the oldest previous cron first.
         if (!$fields = $DB->get_records('block_broken_links_fields', array('active' => 1), 'lastcron ASC')) {
         	mtrace( "No active entries in block_broken_links_fields, so exiting." );
@@ -148,7 +191,7 @@ class block_broken_links extends block_base {
 						}
 					}
 				}
-				// Check if our 2 hours is up. If it is, break out of these loops and set the lastcronid to equal the record id we've reached
+				// Check if cronduration is up. If it is, break out of these loops and set the lastcronid to equal the record id we've reached
 				if (time() > $cronendtime) {
 					$field->lastcronid = $id;
 					$DB->update_record('block_broken_links_fields', $field);
@@ -190,12 +233,39 @@ class block_broken_links extends block_base {
 	 */
     private function checklink($url) {
 
-    	$code = false;
-
     	// This is where our CURL stuff goes - we take the $url and if it works, we return false.
     	// If it's broken, we return and integer 404 or 500 or whatever
-
-    	return $code;
+	
+	// Set cURL options
+       $ch = curl_init();
+       $curloptions = array(CURLOPT_RETURNTRANSFER => true, 	// Do not output to browser
+                            CURLOPT_URL => $url, 		// Set URL
+                            CURLOPT_NOBODY => true, 		// HEAD request only -- FN TODO - not all accept HEAD requests?
+                            CURLOPT_SSL_VERIFYPEER => false,   // Prevent HTTPS errors
+				CURLOPT_TIMEOUT => 10); 		// Timeout value in seconds -- FN TODO - should this be a setting?
+       curl_setopt_array($ch, $curloptions);
+       
+       // Perform cURL call
+       curl_exec($ch);
+       
+       // Check if error occured during the call
+       if (!curl_errno($ch)) {
+             $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);// HTTP status
+             }
+             else {
+               $code = '999';				       // cURL handle errored out       
+               }
+       curl_close($ch); 						// Close handle
+    	
+       // Is URL broken
+       $brokencode = array(0,400,401,402,404,302);		// HTTP codes seen as 'broken' TODO - agree on list     
+       if (in_array($code,$brokencode)) {				// Does HTTP response belong to broken group
+              $code = $response;					// If it does, return response code --> URL is stored in DB
+              }
+              else {
+                $code = false;					// Link works --> not stored in DB, will need re-checked later
+                }
+       return $code;
 	}
 
 	/**
