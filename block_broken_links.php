@@ -110,43 +110,43 @@ class block_broken_links extends block_base {
     function has_config() {return true;}
 
     public function cron() {
-    	global $CFG;
+    	global $CFG, $DB;
         mtrace( "Starting cron script for block broken_links" );
 
 		// Date and time related variables
 		$time = time();
-		if ($CFG->timezone == 99) {                            // Moodle and server timezone values are the same
-            $time = time();                                    // Then time can be returned using time()
-            } else {
-                $offset = get_timezone_offset($CFG->timezone); // If not, what is the timezone Moodle is set at
-                $time = $time + $offset;                       // Compute correct time with GMT offset
-			    }
-		$timezone = $CFG->timezone;                            // Timezone for Moodle installation	
-        $daynumber = date('N', $time); 				           // Numeric representation of weekday. Sunday = 0 and Sunday = 6		
-		$crondays = get_config('broken_links', 'crondays');	   // User-defined values; Days when script should be run
-		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time)); 		   // Returns the most recent midnight for Moodle installation -- TODO - no idea why this returns noon instead of midnight. Need to check on different server
+		if ($CFG->timezone == 99) {                         // Moodle and server timezone values are the same
+                      $time = time();                               // Then time can be returned using time()
+                      } else {
+                $offset = get_timezone_offset($CFG->timezone);      // If not, what is the timezone Moodle is set at
+                $time = $time + $offset;                            // Compute correct time with GMT offset
+		}
+		$timezone = $CFG->timezone;                         // Timezone for Moodle installation	
+                $daynumber = date('N', $time); 			    // Numeric representation of weekday. Sunday = 0 and Sunday = 6		
+		$crondays = get_config('broken_links', 'crondays'); // User-defined values; Days when script should be run
+		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle installation
 		mtrace( $time );
 		mtrace( $timezone );
 		mtrace( $daynumber );
 		mtrace( $crondays );
 		mtrace( $midnight );
 		
-	    // Check if script should be run today
-        if (($crondays[$daynumber]) == 0) {                    // Look for user-defined value for today
-            mtrace( "Should not run today" );     
-                 return true;						
+	       // Check if script should be run today
+               if (($crondays[$daynumber]) == 0) {                  // Look for user-defined value for today
+                      mtrace( "Should not run today" );     
+                      return true;						
                  }
 	    
 		// Script start time. Returns a timestamp
-		$cronstarthour = get_config('broken_links', 'hourcrontime');			// User configuration for hours	
-		$cronstartmin = get_config('broken_links', 'minutecrontime');			// User configuration for minutes
+		$cronstarthour = get_config('broken_links', 'hourcrontime');		// User configuration for hours	
+		$cronstartmin = get_config('broken_links', 'minutecrontime');		// User configuration for minutes
 		$cronstarttime = $midnight + $cronstarthour * 3600 + $cronstartmin * 60;// Cron start time timestamp
 		mtrace( $cronstarthour );
 		mtrace( $cronstartmin );
 		mtrace( $cronstarttime );
 		
 		// Script end time. Returns a timestamp
-		$cronduration = get_config('broken_links', 'cronduration'); 			// User configuration for cron duration
+		$cronduration = get_config('broken_links', 'cronduration'); 		// User configuration for cron duration
 		$cronendtime = $cronstarttime + $cronduration * 3600;
 		mtrace( $cronduration );
 		mtrace( $cronendtime );
