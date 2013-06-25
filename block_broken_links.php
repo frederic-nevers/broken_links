@@ -240,9 +240,10 @@ class block_broken_links extends block_base {
        $ch = curl_init();
        $curloptions = array(CURLOPT_RETURNTRANSFER => true, 	// Do not output to browser
                             CURLOPT_URL => $url, 		// Set URL
-                            CURLOPT_NOBODY => true, 		// HEAD request only -- FN TODO - not all accept HEAD requests?
-                            CURLOPT_SSL_VERIFYPEER => false,   // Prevent HTTPS errors
-				CURLOPT_TIMEOUT => 10); 		// Timeout value in seconds -- FN TODO - should this be a setting?
+                            CURLOPT_NOBODY => true, 		// HEAD request only
+                            CURLOPT_SSL_VERIFYPEER => false,    // Prevent HTTPS errors
+			    CURLOPT_TIMEOUT => 10,   		// Timeout value in seconds -- FN TODO - should this be a setting
+			    CURLOPT_FOLLOWLOCATION => false); 	// Avoid fake DNS issues	
        curl_setopt_array($ch, $curloptions);
        
        // Perform cURL call
@@ -253,21 +254,21 @@ class block_broken_links extends block_base {
              $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);// HTTP status
              }
              else {
-               $code = '999';				       // cURL handle errored out       
+               $response = '0';	 		// cURL handle errored out -- FN TODO - handle different codes (couldn't get it to error out other than 0)      
                }
-       curl_close($ch); 						// Close handle
-    	
+       curl_close($ch); 			// Close handle
+		
        // Is URL broken
-       $brokencode = array(0,400,401,402,404,302);		// HTTP codes seen as 'broken' TODO - agree on list     
-       if (in_array($code,$brokencode)) {				// Does HTTP response belong to broken group
-              $code = $response;					// If it does, return response code --> URL is stored in DB
+       $brokencode = array(0,404);		// HTTP codes seen as 'broken' TODO - agree on list     
+       if (in_array($response,$brokencode)) {	// Does HTTP response belong to broken group
+              $code = $response;		// If it does, return response code --> URL is stored in DB
               }
               else {
-                $code = false;					// Link works --> not stored in DB, will need re-checked later
+                $code = false;			// Link works --> not stored in DB, will need re-checked later
                 }
        return $code;
 	}
-
+	
 	/**
 	 * Returns the course id and the course module id associated with a particular record in a given table
 	 *
