@@ -114,49 +114,41 @@ class block_broken_links extends block_base {
         mtrace( "Starting cron script for block broken_links" );
 
 		// Date and time related variables
-		$time = time();
-		if ($CFG->timezone == 99) {                         // Moodle and server timezone values are the same
-                      $time = time();                               // Then time can be returned using time()
-                      } else {
-                $offset = get_timezone_offset($CFG->timezone);      // If not, what is the timezone Moodle is set at
-                $time = $time + $offset;                            // Compute correct time with GMT offset
-		}
-		$timezone = $CFG->timezone;                         // Timezone for Moodle installation	
-                $daynumber = date('N', $time); 			    // Numeric representation of weekday. Sunday = 0 and Sunday = 6		
-		$crondays = get_config('broken_links', 'crondays'); // User-defined values; Days when script should be run
-		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle installation
-		mtrace( $time );
-		mtrace( $timezone );
-		mtrace( $daynumber );
-		mtrace( $crondays );
-		mtrace( $midnight );
+        $time = time();
+		if ($CFG->timezone == 99) {                                 // Moodle and server timezone values are the same
+            $time = time();                                         // Then time can be returned using time()
+                } else {
+                    $offset = get_timezone_offset($CFG->timezone);  // If not, what is the timezone Moodle is set at
+                    $time = $time + $offset;                        // Compute correct time with GMT offset
+        }
+                    
+        $timezone = $CFG->timezone;                                 // Timezone for Moodle installation	
+        $daynumber = date('N', $time);                              // Numeric representation of weekday. Sunday = 0 and Sunday = 6		
+		$crondays = get_config('broken_links', 'crondays');         // User-defined values; Days when script should be run
+		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle 
 		
-	       // Check if script should be run today
-               if (($crondays[$daynumber]) == 0) {                  // Look for user-defined value for today
-                      mtrace( "Should not run today" );     
-                      return true;						
-                 }
+        // Check if script should be run today
+        if (($crondays[$daynumber]) == 0) {                         // Look for user-defined value for today
+            mtrace( "Should not run today" );     
+            return true;						
+        }
 	    
 		// Script start time. Returns a timestamp
-		$cronstarthour = get_config('broken_links', 'hourcrontime');		// User configuration for hours	
-		$cronstartmin = get_config('broken_links', 'minutecrontime');		// User configuration for minutes
-		$cronstarttime = $midnight + $cronstarthour * 3600 + $cronstartmin * 60;// Cron start time timestamp
-		mtrace( $cronstarthour );
-		mtrace( $cronstartmin );
-		mtrace( $cronstarttime );
-		
+        $cronstarthour = get_config('broken_links', 'hourcrontime');            // User configuration for hours	
+        $cronstartmin = get_config('broken_links', 'minutecrontime');           // User configuration for minutes
+        $cronstarttime = $midnight + $cronstarthour * 3600 + $cronstartmin * 60;// Cron start time timestamp
+
 		// Script end time. Returns a timestamp
-		$cronduration = get_config('broken_links', 'cronduration'); 		// User configuration for cron duration
-		$cronendtime = $cronstarttime + $cronduration * 3600;
-		mtrace( $cronduration );
-		mtrace( $cronendtime );
+        $cronduration = get_config('broken_links', 'cronduration');             // User configuration for cron duration
+        $cronendtime = $cronstarttime + $cronduration * 3600;
+        mtrace( $cronduration );
+        mtrace( $cronendtime );
 		
-        
         // Check if time is within start and end of user-defined values
         if ($time < $cronstarttime || $time > $cronendtime) {
-	        mtrace( "Outside of time window" );
-	        return true;
-               }
+            mtrace( "Outside of time window" );
+            return true;
+        }
         
        	// Get the DB tables and fields that we're going to search. These will be in order of the oldest previous cron first.
         if (!$fields = $DB->get_records('block_broken_links_fields', array('active' => 1), 'lastcron ASC')) {
@@ -236,14 +228,14 @@ class block_broken_links extends block_base {
     	// This is where our CURL stuff goes - we take the $url and if it works, we return false.
     	// If it's broken, we return and integer 404 or 500 or whatever
 	
-	// Set cURL options
-       $ch = curl_init();
-       $curloptions = array(CURLOPT_RETURNTRANSFER => true, 	// Do not output to browser
-                            CURLOPT_URL => $url, 		// Set URL
-                            CURLOPT_NOBODY => true, 		// HEAD request only
+        // Set cURL options
+        $ch = curl_init();
+        $curloptions = array(CURLOPT_RETURNTRANSFER => true,    // Do not output to browser
+                            CURLOPT_URL => $url,                // Set URL
+                            CURLOPT_NOBODY => true,             // HEAD request only
                             CURLOPT_SSL_VERIFYPEER => false,    // Prevent HTTPS errors
-			    CURLOPT_TIMEOUT => 10,   		// Timeout value in seconds -- FN TODO - should this be a setting
-			    CURLOPT_FOLLOWLOCATION => false); 	// Avoid fake DNS issues	
+                            CURLOPT_TIMEOUT => 10,              // Timeout value in seconds -- FN TODO - should this be a setting
+                            CURLOPT_FOLLOWLOCATION => false);   // Avoid fake DNS issues	
        curl_setopt_array($ch, $curloptions);
        
        // Perform cURL call
@@ -251,22 +243,23 @@ class block_broken_links extends block_base {
        
        // Check if error occured during the call
        if (!curl_errno($ch)) {
-             $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);// HTTP status
-             }
-             else {
-               $response = '0';	 		// cURL handle errored out -- FN TODO - handle different codes (couldn't get it to error out other than 0)      
-               }
-       curl_close($ch); 			// Close handle
+           $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);// HTTP status
+           } else {
+               $response = '0';                 // cURL handle errored out -- FN TODO - handle different codes      
+       }
+       
+       curl_close($ch);                         // Close handle
 		
        // Is URL broken
-       $brokencode = array(0,404);		// HTTP codes seen as 'broken' TODO - agree on list     
+       $brokencode = array(0,404);              // HTTP codes seen as 'broken' TODO - agree on list     
        if (in_array($response,$brokencode)) {	// Does HTTP response belong to broken group
-              $code = $response;		// If it does, return response code --> URL is stored in DB
-              }
-              else {
-                $code = false;			// Link works --> not stored in DB, will need re-checked later
-                }
+           $code = $response;                   // If it does, return response code --> URL is stored in DB
+           } else {
+               $code = false;                   // Link works --> not stored in DB, will need re-checked later
+       }
+       
        return $code;
+	
 	}
 	
 	/**
