@@ -121,20 +121,20 @@ class block_broken_links extends block_base {
                     $offset = get_timezone_offset($CFG->timezone);  // If not, what is the timezone Moodle is set at
                     $time = $time + $offset;                        // Compute correct time with GMT offset
         }
-                    
-        $timezone = $CFG->timezone;                                 // Timezone for Moodle installation	
-        $daynumber = date('N', $time);                              // Numeric representation of weekday. Sunday = 0 and Sunday = 6		
+
+        $timezone = $CFG->timezone;                                 // Timezone for Moodle installation
+        $daynumber = date('N', $time);                              // Numeric representation of weekday. Sunday = 0 and Sunday = 6
 		$crondays = get_config('broken_links', 'crondays');         // User-defined values; Days when script should be run
-		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle 
-		
+		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle
+
         // Check if script should be run today
         if (($crondays[$daynumber]) == 0) {                         // Look for user-defined value for today
-            mtrace( "Should not run today" );     
-            return true;						
+            mtrace( "Should not run today" );
+            return true;
         }
-	    
+
 		// Script start time. Returns a timestamp
-        $cronstarthour = get_config('broken_links', 'hourcrontime');            // User configuration for hours	
+        $cronstarthour = get_config('broken_links', 'hourcrontime');            // User configuration for hours
         $cronstartmin = get_config('broken_links', 'minutecrontime');           // User configuration for minutes
         $cronstarttime = $midnight + $cronstarthour * 3600 + $cronstartmin * 60;// Cron start time timestamp
 
@@ -143,37 +143,53 @@ class block_broken_links extends block_base {
         $cronendtime = $cronstarttime + $cronduration * 3600;
         mtrace( $cronduration );
         mtrace( $cronendtime );
-		
+
         // Check if time is within start and end of user-defined values
         if ($time < $cronstarttime || $time > $cronendtime) {
             mtrace( "Outside of time window" );
             return true;
         }
-        
+
        	// Get the DB tables and fields that we're going to search. These will be in order of the oldest previous cron first.
         if (!$fields = $DB->get_records('block_broken_links_fields', array('active' => 1), 'lastcron ASC')) {
         	mtrace( "No active entries in block_broken_links_fields, so exiting." );
         	return true;
 		}
 
+		// Set up the options array for format_text()
+    	$options = array();
+    	$options['nocache'] = true;
+    	$options['filter'] = true;
+    	$options['para'] = true;
+
         // This is the main loop for checking links.
         // We check each DB field in turn, looping through each record within that field in a sub-loop.
         // We start out from where we left off last time.
         foreach ($fields as $key => $field) {
 
-			// Return all the records for this DB field as an associative array, where the key is the id field of the DB table
+			// Return all the records for this DB field
 			// The lastcronid will only apply to the very first field we look at in this loop, as others will have lastcronid=0
-			$sql = "SELECT id, $field->field FROM $field->table WHERE id > $field->lastcronid";
-			$records = $DB->get_records_sql_menu($sql, array('lastcronid' => $field->lastcronid));
+			$sql = "SELECT id, $field->field, $field->fieldformat FROM $field->table WHERE id > $field->lastcronid";
+			$records = $DB->get_records_sql($sql, array('lastcronid' => $field->lastcronid));
+
+			// This object will become a new entry in table block_broken_links if a broken link is found
+			$entry = new stdClass();
+			$entry->module = $field->modname;	// e.g. 'forum' or 'assign'
 
 			foreach ($records as $id => $record) {			// Loop through each $record (string, not object) for this DB field
-				$urls = $this->getlinks($record);			// Returns an array of URLs contained within the field (string)
+				list($entry->course, $entry->cmid) = $this->getmoduleinfo($field, $id);	// mdl_course.id and mdl_course_modules.id
+				$context = get_context_instance(CONTEXT_MODULE, $entry->cmid);			// Context is used for filtering the string
+
+				// First we apply the appropriate text filters to the string, based on its context.
+    			// The filter of particular importance here will be the "Convert URLs into links and images" filter
+    			$options['context'] = $context;
+    			$string = format_text($record->field, $record->fieldformat, $options);
+
+				$urls = $this->getlinks($string);			// Returns an array of URLs contained within the field (string)
 				foreach ($urls as $url) {					// Loop through these URLs that have been found
 					$broken = $this->checklink($url);		// Returns a 404-type code if the URL is broken
 					if ($broken) {
-						$entry->module = $field->modname;	// e.g. 'forum' or 'assign'
 						$entry->urltocheck = $url;			// The broken URL itself
-						list($entry->course, $entry->cmid) = $this->getmoduleinfo($field, $id);	// mdl_course.id and mdl_course_modules.id
 
 						if (!$DB->record_exists('block_broken_links', $entry)) {
 							$entry->timestamp = time();
@@ -210,9 +226,15 @@ class block_broken_links extends block_base {
 	 */
     private function getlinks($string) {
 
-    	// This is where our REGEXP goes - the way I imagine it, we take the $string and look for URLs
-    	// Given that there may be more than one, we have to return our findings as an array - each element is simply a string URL
+		// This method came from http://stackoverflow.com/questions/3820666/grabbing-the-href-attribute-of-an-a-element/3820783
+		$dom = new DOMDocument;
+		$dom->loadHTML($test);
+		$xpath = new DOMXPath($dom);
+		$nodes = $xpath->query('//a/@href');
 		$urls = array();
+		foreach($nodes as $href) {
+		    $urls[] = $href->nodeValue;    // Store current href attribute value in our array
+		}
 
 		return $urls;
 	}
@@ -227,7 +249,7 @@ class block_broken_links extends block_base {
 
     	// This is where our CURL stuff goes - we take the $url and if it works, we return false.
     	// If it's broken, we return and integer 404 or 500 or whatever
-	
+
         // Set cURL options
         $ch = curl_init();
         $curloptions = array(CURLOPT_RETURNTRANSFER => true,    // Do not output to browser
@@ -235,33 +257,33 @@ class block_broken_links extends block_base {
                             CURLOPT_NOBODY => true,             // HEAD request only
                             CURLOPT_SSL_VERIFYPEER => false,    // Prevent HTTPS errors
                             CURLOPT_TIMEOUT => 10,              // Timeout value in seconds -- FN TODO - should this be a setting
-                            CURLOPT_FOLLOWLOCATION => false);   // Avoid fake DNS issues	
+                            CURLOPT_FOLLOWLOCATION => false);   // Avoid fake DNS issues
        curl_setopt_array($ch, $curloptions);
-       
+
        // Perform cURL call
        curl_exec($ch);
-       
+
        // Check if error occured during the call
        if (!curl_errno($ch)) {
            $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);// HTTP status
            } else {
-               $response = '0';                 // cURL handle errored out -- FN TODO - handle different codes      
+               $response = '0';                 // cURL handle errored out -- FN TODO - handle different codes
        }
-       
+
        curl_close($ch);                         // Close handle
-		
+
        // Is URL broken
-       $brokencode = array(0,404);              // HTTP codes seen as 'broken' TODO - agree on list     
+       $brokencode = array(0,404);              // HTTP codes seen as 'broken' TODO - agree on list
        if (in_array($response,$brokencode)) {	// Does HTTP response belong to broken group
            $code = $response;                   // If it does, return response code --> URL is stored in DB
            } else {
                $code = false;                   // Link works --> not stored in DB, will need re-checked later
        }
-       
+
        return $code;
-	
+
 	}
-	
+
 	/**
 	 * Returns the course id and the course module id associated with a particular record in a given table
 	 *
