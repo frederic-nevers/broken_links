@@ -192,7 +192,7 @@ class block_broken_links extends block_base {
 						$entry->urltocheck = $url;			// The broken URL itself
 
 						if (!$DB->record_exists('block_broken_links', $entry)) {
-							$entry->timestamp = time();
+							$entry->timestamp = $time;
 							$entry->response = $broken;		// 404-type code
 							$entry->ignoreurl = 0;
 							$DB->insert_record('block_broken_links', $entry);
@@ -200,7 +200,7 @@ class block_broken_links extends block_base {
 					}
 				}
 				// Check if cronduration is up. If it is, break out of these loops and set the lastcronid to equal the record id we've reached
-				if (time() > $cronendtime) {
+				if ($time > $cronendtime) {
 					$field->lastcronid = $id;
 					$DB->update_record('block_broken_links_fields', $field);
 					break 2;	// Exit both $records and $fields loops
@@ -211,7 +211,7 @@ class block_broken_links extends block_base {
 				$field->lastcronid = 0;
 			}
 			// Also update the lastcron timestamp for this field to move it to the bottom of the waiting list.
-			$field->lastcron = time();
+			$field->lastcron = $time;
 			$DB->update_record('block_broken_links_fields', $field);
 		}
 
