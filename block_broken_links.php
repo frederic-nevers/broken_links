@@ -123,7 +123,7 @@ class block_broken_links extends block_base {
         }
 
         $timezone = $CFG->timezone;                                 // Timezone for Moodle installation
-        $daynumber = date('N', $time);                              // Numeric representation of weekday. Sunday = 0 and Sunday = 6
+        $daynumber = date('w', $time);                              // Numeric representation of weekday. Sunday = 0 and Sunday = 6
 		$crondays = get_config('broken_links', 'crondays');         // User-defined values; Days when script should be run
 		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle
 
