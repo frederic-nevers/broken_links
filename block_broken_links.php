@@ -169,7 +169,7 @@ class block_broken_links extends block_base {
 
 			// Return all the records for this DB field
 			// The lastcronid will only apply to the very first field we look at in this loop, as others will have lastcronid=0
-			$sql = "SELECT id, $field->field, $field->fieldformat FROM $field->table WHERE id > $field->lastcronid";
+			$sql = "SELECT id, $field->field AS fld, $field->fieldformat AS format FROM {{$field->modtable}} WHERE id > :lastcronid";
 			$records = $DB->get_records_sql($sql, array('lastcronid' => $field->lastcronid));
 
 			// This object will become a new entry in table block_broken_links if a broken link is found
@@ -183,7 +183,7 @@ class block_broken_links extends block_base {
 				// First we apply the appropriate text filters to the string, based on its context.
     			// The filter of particular importance here will be the "Convert URLs into links and images" filter
     			$options['context'] = $context;
-    			$string = format_text($record->field, $record->fieldformat, $options);
+    			$string = format_text($record->fld, $record->format, $options);
 
 				$urls = $this->getlinks($string);			// Returns an array of URLs contained within the field (string)
 				foreach ($urls as $url) {					// Loop through these URLs that have been found
@@ -228,7 +228,7 @@ class block_broken_links extends block_base {
 
 		// This method came from http://stackoverflow.com/questions/3820666/grabbing-the-href-attribute-of-an-a-element/3820783
 		$dom = new DOMDocument;
-		$dom->loadHTML($test);
+		$dom->loadHTML($string);
 		$xpath = new DOMXPath($dom);
 		$nodes = $xpath->query('//a/@href');
 		$urls = array();
@@ -293,18 +293,20 @@ class block_broken_links extends block_base {
 	 */
     private function getmoduleinfo($field, $id) {
 
+    	global $DB;
+
     	// Get the module id number to simplify the sql statements below
     	$modid = $DB->get_field('modules', 'id', array ('name' => $field->modname), MUST_EXIST);
 
     	// First handle the easy cases - where this field is the standard intro field of the main module table
-    	if ($field->table == $field->modname && $field->field == 'intro') {
-    		$course = $DB->get_field($field->table, 'course', array ('id' => $id), MUST_EXIST);
+    	if ($field->modtable == $field->modname && $field->field == 'intro') {
+    		$course = $DB->get_field($field->modtable, 'course', array ('id' => $id), MUST_EXIST);
     		$cmid = $DB->get_field('course_modules', 'id', array ('instance' => $id, 'module' => $modid), MUST_EXIST);
     		return array($course, $cmid);
 		}
 
     	// Now the non-standard cases
-    	switch ($field->table) {
+    	switch ($field->modtable) {
 
 		    case "forum_posts":
     			$sql = "SELECT cm.id AS cmid, d.course FROM course_modules cm

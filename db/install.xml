@@ -1,38 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/broken_links/db" VERSION="20130629" COMMENT="XMLDB file for Moodle blocks/broken_links"
+<XMLDB PATH="blocks/broken_links/db" VERSION="20130630" COMMENT="XMLDB file for Moodle blocks/broken_links"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
     <TABLE NAME="block_broken_links" COMMENT="Contains all data the 'Broken links' block needs to generate and display data">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course in which the URL is located"/>
-        <FIELD NAME="module" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Module type in which the URL is located"/>
-        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course module ID in which the URL is located"/>
-        <FIELD NAME="urltocheck" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Actual URL to be checked by the system"/>
-        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp of when the URL was checked"/>
-        <FIELD NAME="response" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="Response code sent by the server which the URL points to"/>
-        <FIELD NAME="ignoreurl" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="Sets whether the URL should be ignored i.e. not be checked for response"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="module" COMMENT="Course in which the URL is located"/>
+        <FIELD NAME="module" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="course" NEXT="cmid" COMMENT="Module type in which the URL is located"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="module" NEXT="urltocheck" COMMENT="Course module ID in which the URL is located"/>
+        <FIELD NAME="urltocheck" TYPE="char" LENGTH="1333" NOTNULL="true" SEQUENCE="false" PREVIOUS="cmid" NEXT="timestamp" COMMENT="Actual URL to be checked by the system"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="urltocheck" NEXT="response" COMMENT="Timestamp of when the URL was checked"/>
+        <FIELD NAME="response" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timestamp" NEXT="ignoreurl" COMMENT="Response code sent by the server which the URL points to"/>
+        <FIELD NAME="ignoreurl" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="response" COMMENT="Sets whether the URL should be ignored i.e. not be checked for response"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="cmid"/>
+        <KEY NAME="cmid" TYPE="foreign" FIELDS="cmid" REFTABLE="course_modules" REFFIELDS="id" PREVIOUS="primary" NEXT="module"/>
+        <KEY NAME="module" TYPE="foreign" FIELDS="module" REFTABLE="modules" REFFIELDS="name" PREVIOUS="cmid" NEXT="course"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id" PREVIOUS="module"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="ignoreurl" UNIQUE="false" FIELDS="ignoreurl"/>
+      </INDEXES>
     </TABLE>
-    <TABLE NAME="block_broken_links_fields" COMMENT="Holds field definitions">
+    <TABLE NAME="block_broken_links_fields" COMMENT="Holds table/field definitions for the fields which broken_links will check">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="modname" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="The module name from mdl_modules"/>
-        <FIELD NAME="modtable" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="The name of a Moodle table e.g. 'forum_posts'"/>
-        <FIELD NAME="field" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="The name of a field within modtable, e.g. 'message' within 'forum_posts'"/>
-        <FIELD NAME="fieldformat" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="The name of the field within the table referenced by modtable that holds the format of the field"/>
-        <FIELD NAME="getstring" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The string to be used within getstring to describe this field"/>
-        <FIELD NAME="active" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="lastcron" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="modname"/>
+        <FIELD NAME="modname" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="modtable" COMMENT="The module name from mdl_modules"/>
+        <FIELD NAME="modtable" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="modname" NEXT="field" COMMENT="The name of a Moodle table e.g. 'forum_posts'"/>
+        <FIELD NAME="field" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="modtable" NEXT="fieldformat" COMMENT="The name of a field within modtable, e.g. 'message' within 'forum_posts'"/>
+        <FIELD NAME="fieldformat" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="field" NEXT="getstring" COMMENT="The name of the field within the table referenced by modtable that holds the format of the field"/>
+        <FIELD NAME="getstring" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="fieldformat" NEXT="active" COMMENT="The string to be used within getstring to describe this field"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="getstring" NEXT="lastcron"/>
+        <FIELD NAME="lastcron" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="active" NEXT="lastcronid"/>
+        <FIELD NAME="lastcronid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="lastcron" COMMENT="Holds the last-processed id field of the table that was being looked at when the last cron timed out"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="modname" TYPE="foreign" FIELDS="modname" REFTABLE="modules" REFFIELDS="name"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="modname"/>
+        <KEY NAME="modname" TYPE="foreign" FIELDS="modname" REFTABLE="modules" REFFIELDS="name" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
   </TABLES>
