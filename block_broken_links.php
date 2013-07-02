@@ -124,9 +124,13 @@ class block_broken_links extends block_base {
 
         $timezone = $CFG->timezone;                                 // Timezone for Moodle installation
         $daynumber = date('w', $time);                              // Numeric representation of weekday. Sunday = 0 and Sunday = 6
-		$crondays = get_config('broken_links', 'crondays');         // User-defined values; Days when script should be run
-		$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle
-
+	$crondays = get_config('broken_links', 'crondays');         // User-defined values; Days when script should be run
+	$midnight = mktime(0, 0, 0, date("m", $time), date("d", $time), date("Y", $time));// Returns the most recent midnight for Moodle
+	mtrace( $timezone );		// FNTEMP
+	mtrace( $time );		// FNTEMP
+        mtrace( $daynumber );		// FNTEMP
+        mtrace( $midnight );		// FNTEMP
+	
         // Check if script should be run today
         if (($crondays[$daynumber]) == 0) {                         // Look for user-defined value for today
             mtrace( "Should not run today" );
@@ -137,12 +141,15 @@ class block_broken_links extends block_base {
         $cronstarthour = get_config('broken_links', 'hourcrontime');            // User configuration for hours
         $cronstartmin = get_config('broken_links', 'minutecrontime');           // User configuration for minutes
         $cronstarttime = $midnight + $cronstarthour * 3600 + $cronstartmin * 60;// Cron start time timestamp
+	mtrace( $cronstarthour );	// FNTEMP
+	mtrace( $cronstartmin );	// FNTEMP
+        mtrace( $cronstarttime );	// FNTEMP
 
 		// Script end time. Returns a timestamp
         $cronduration = get_config('broken_links', 'cronduration');             // User configuration for cron duration
         $cronendtime = $cronstarttime + $cronduration * 3600;
-        mtrace( $cronduration );
-        mtrace( $cronendtime );
+        mtrace( $cronduration );	// FNTEMP
+        mtrace( $cronendtime );		// FNTEMP
 
         // Check if time is within start and end of user-defined values
         if ($time < $cronstarttime || $time > $cronendtime) {
