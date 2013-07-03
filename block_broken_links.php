@@ -84,7 +84,59 @@ class block_broken_links extends block_base {
 			$o = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
                 'class' => 'iconsmall activityicon', 'alt' => $mod->modfullname));   	// Display module icon
 			$o .= $mod->name;									// Display module name
-			$o .= '';											// Action icons
+
+			// Action icons for the module - test the user's permissions on a per-module basis exactly as it's done in /course/lib.php
+			$hasmanageactivities = has_capability('moodle/course:manageactivities', $mod->context);
+			$baseurl = new moodle_url('/course/mod.php', array('sesskey' => sesskey()));
+
+			// KSW TODO what about section return
+			// ($sr !== null) {
+			//  $baseurl->param('sr', $sr);
+			//
+
+			// Edit icon
+			if ($hasmanageactivities) {
+			    $action = new action_link(
+		            new moodle_url($baseurl, array('update' => $mod->id)),
+		            new pix_icon('t/edit', get_string('update'), 'moodle', array('class' => 'iconsmall', 'title' => '')),
+		            null,
+		            array('class' => 'editing_update', 'title' => get_string('update'))
+		        );
+		        $o .= $OUTPUT->render($action);
+			}
+
+		    // Delete icon
+		    if ($hasmanageactivities) {
+		        $action = new action_link(
+		            new moodle_url($baseurl, array('delete' => $mod->id)),
+		            new pix_icon('t/delete', get_string('delete'), 'moodle', array('class' => 'iconsmall', 'title' => '')),
+		            null,
+		            array('class' => 'editing_delete', 'title' => get_string('delete'))
+		        );
+		        $o .= $OUTPUT->render($action);
+		    }
+
+		    // Hide-show icon
+		    if (has_capability('moodle/course:activityvisibility', $mod->context)) {
+		        if ($mod->visible) {
+		            $action = new action_link(
+		                new moodle_url($baseurl, array('hide' => $mod->id)),
+		                new pix_icon('t/hide', get_string('hide'), 'moodle', array('class' => 'iconsmall', 'title' => '')),
+		                null,
+		                array('class' => 'editing_hide', 'title' => get_string('hide'))
+		            );
+					$o .= $OUTPUT->render($action);
+		        } else {
+		            $action = new action_link(
+		                new moodle_url($baseurl, array('show' => $mod->id)),
+		                new pix_icon('t/show', get_string('show'), 'moodle', array('class' => 'iconsmall', 'title' => '')),
+		                null,
+		                array('class' => 'editing_show', 'title' => get_string('show'))
+		            );
+					$o .= $OUTPUT->render($action);
+		        }
+		    }
+
 			$this->content->text .= html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
 		}
 
