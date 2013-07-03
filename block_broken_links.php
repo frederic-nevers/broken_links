@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * broken_links block caps.
+ * Block broken_links searches the database for URLs that return an error code.
  *
  * @package    block_broken_links
  * @copyright  Frederic Nevers <fredericnevers@gmail.com>
@@ -130,7 +130,7 @@ class block_broken_links extends block_base {
 	mtrace( $time );		// FNTEMP
         mtrace( $daynumber );		// FNTEMP
         mtrace( $midnight );		// FNTEMP
-	
+
         // Check if script should be run today
         if (($crondays[$daynumber]) == 0) {                         // Look for user-defined value for today
             mtrace( "Should not run today" );
