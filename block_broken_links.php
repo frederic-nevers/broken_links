@@ -77,7 +77,7 @@ class block_broken_links extends block_base {
         foreach ($links as $link) {
         	// First test to see if the course moodule still exists - if it doesn't, delete this broken_links DB record.
         	if (!array_key_exists($link->cmid, $modinfo->cms)) {
-        		$DB->delete_records('block_broken_links', $link);	// KSW TODO is this the place to be deleting reconrds?
+        		$DB->delete_records('block_broken_links', array('id' => $link->id));	// KSW TODO is this the place to be deleting reconrds?
         		continue;
 			}
 			$mod = $modinfo->cms[$link->cmid];					// Retrieve the module object
@@ -198,7 +198,7 @@ class block_broken_links extends block_base {
 					if ($broken) {
 						$entry->urltocheck = $url;			// The broken URL itself
 
-						if (!$DB->record_exists('block_broken_links', $entry)) {
+						if (!$DB->record_exists('block_broken_links', (array) $entry)) {
 							$entry->timestamp = $time;
 							$entry->response = $broken;		// 404-type code
 							$entry->ignoreurl = 0;
