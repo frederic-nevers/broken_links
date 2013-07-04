@@ -81,13 +81,14 @@ class block_broken_links extends block_base {
         		continue;
 			}
 			$mod = $modinfo->cms[$link->cmid];					// Retrieve the module object
-			$o = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
-                'class' => 'iconsmall activityicon', 'alt' => $mod->modfullname));   	// Display module icon
-			$o .= $mod->name;									// Display module name
+			$modicon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
+                'class' => 'iconsmall activityicon', 'alt' => $mod->modfullname));   		// Display module icon
+			$modname = html_writer::tag('div', $modicon . $mod->name, array('class' => 'modname'));		// Display module name
 
 			// Action icons for the module - test the user's permissions on a per-module basis exactly as it's done in /course/lib.php
 			$hasmanageactivities = has_capability('moodle/course:manageactivities', $mod->context);
 			$baseurl = new moodle_url('/course/mod.php', array('sesskey' => sesskey()));
+			$iconhtml = '';
 
 			// KSW TODO what about section return
 			// ($sr !== null) {
@@ -102,7 +103,7 @@ class block_broken_links extends block_base {
 		            null,
 		            array('class' => 'editing_update', 'title' => get_string('update'))
 		        );
-		        $o .= $OUTPUT->render($action);
+		        $iconhtml .= $OUTPUT->render($action);
 			}
 
 		    // Delete icon
@@ -113,7 +114,7 @@ class block_broken_links extends block_base {
 		            null,
 		            array('class' => 'editing_delete', 'title' => get_string('delete'))
 		        );
-		        $o .= $OUTPUT->render($action);
+		        $iconhtml .= $OUTPUT->render($action);
 		    }
 
 		    // Hide-show icon
@@ -125,7 +126,7 @@ class block_broken_links extends block_base {
 		                null,
 		                array('class' => 'editing_hide', 'title' => get_string('hide'))
 		            );
-					$o .= $OUTPUT->render($action);
+					$iconhtml .= $OUTPUT->render($action);
 		        } else {
 		            $action = new action_link(
 		                new moodle_url($baseurl, array('show' => $mod->id)),
@@ -133,11 +134,36 @@ class block_broken_links extends block_base {
 		                null,
 		                array('class' => 'editing_show', 'title' => get_string('show'))
 		            );
-					$o .= $OUTPUT->render($action);
+					$iconhtml .= $OUTPUT->render($action);
 		        }
 		    }
 
-			$this->content->text .= html_writer::tag('div', $o, array('class' => 'broken_link'));	// Wrap each link in a div
+		    // Ignore icon
+		    if ($hasmanageactivities) {
+		        $action = new action_link(
+		            new moodle_url($baseurl, array('ignore' => $mod->id)),
+		            new pix_icon('ignore', get_string('ignore', 'block_broken_links'), 'block_broken_links', array('class' => 'iconsmall', 'title' => '')),
+		            null,
+		            array('class' => 'editing_delete', 'title' => get_string('ignore', 'block_broken_links'))
+		        );
+		        $iconhtml .= $OUTPUT->render($action);
+		    }
+
+		    // Ignore icon 2
+		    if ($hasmanageactivities) {
+		        $action = new action_link(
+		            new moodle_url($baseurl, array('ignore' => $mod->id)),
+		            new pix_icon('ignore_block', get_string('ignore', 'block_broken_links'), 'block_broken_links', array('class' => 'iconsmall', 'title' => '')),
+		            null,
+		            array('class' => 'editing_delete', 'title' => get_string('ignore', 'block_broken_links'))
+		        );
+		        $iconhtml .= $OUTPUT->render($action);
+		    }
+
+			$iconhtml = html_writer::tag('div', $iconhtml, array('class' => 'icons'));			// Wrap icons in their own div
+
+			// Wrap the module name + icons in an overall div. The icons are put first as they float from the right in CSS.
+			$this->content->text .= html_writer::tag('div', $iconhtml . $modname, array('class' => 'broken_link'));
 		}
 
 

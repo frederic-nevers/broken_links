@@ -62,3 +62,6 @@ $string['broken_links:view'] = 'View the Broken links block';
 
 // General strings
 $string['pluginname'] = 'Broken links';
+
+
+$string['ignore'] = 'Ignore this activity';
