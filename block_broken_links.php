@@ -83,7 +83,11 @@ class block_broken_links extends block_base {
 			$mod = $modinfo->cms[$link->cmid];					// Retrieve the module object
 			$modicon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
                 'class' => 'iconsmall activityicon', 'alt' => $mod->modfullname));   		// Display module icon
-			$modname = html_writer::tag('div', $modicon . $mod->name, array('class' => 'modname'));		// Display module name
+			$modclass = array('class' => 'modname');
+			if (!$mod->visible) {
+				$modclass['class'] .= ' dimmed_text';
+			}
+			$modname = html_writer::tag('div', $modicon . $mod->name, $modclass);		// Display module name
 
 			// Action icons for the module - test the user's permissions on a per-module basis exactly as it's done in /course/lib.php
 			$hasmanageactivities = has_capability('moodle/course:manageactivities', $mod->context);
