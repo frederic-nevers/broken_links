@@ -138,17 +138,6 @@ class block_broken_links extends block_base {
 		        }
 		    }
 
-		    // Ignore icon
-		    if ($hasmanageactivities) {
-		        $action = new action_link(
-		            new moodle_url($baseurl, array('ignore' => $mod->id)),
-		            new pix_icon('ignore', get_string('ignore', 'block_broken_links'), 'block_broken_links', array('class' => 'iconsmall', 'title' => '')),
-		            null,
-		            array('class' => 'editing_delete', 'title' => get_string('ignore', 'block_broken_links'))
-		        );
-		        $iconhtml .= $OUTPUT->render($action);
-		    }
-
 		    // Ignore icon 2
 		    if ($hasmanageactivities) {
 		        $action = new action_link(
